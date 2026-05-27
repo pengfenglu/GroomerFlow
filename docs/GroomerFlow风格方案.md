@@ -1,4 +1,4 @@
-# GroomerFlow 视觉与交互风格方案
+# GetGroomerFlow 视觉与交互风格方案
 
 > **目标**：建立「专业、可信、轻量」的第一印象，符合 **北美 / 英国 / 爱尔兰 / 澳新** 独立宠物美容师的习惯。  
 > **核心原则**：克制即高级，清晰即美感；每屏只传达一个核心任务。  
@@ -136,7 +136,7 @@
 │  “No credit card required” (if true)    │
 ├─────────────────────────────────────────┤
 │  Footer: Terms of Service · Privacy Policy │
-│          · Contact · © Year GroomerFlow  │
+│          · Contact · © Year GetGroomerFlow  │
 └─────────────────────────────────────────┘
 ```
 
@@ -302,7 +302,7 @@
 ## 十一、给 Cursor 的约束片段
 
 ```text
-GroomerFlow UI targets independent pet groomers in the US/UK/CA/AU.
+GetGroomerFlow UI targets independent pet groomers in the US/UK/CA/AU.
 Use Inter, green-800 (#166534) primary, slate neutrals, rounded-lg,
 shadow-sm, no gradients. One primary CTA per screen. All copy in English
 (en-US spelling default). Use Intl for dates/times/currency. Show groomer

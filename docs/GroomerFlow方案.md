@@ -1,4 +1,6 @@
-# GroomerFlow：独立宠物美容师预约与客户管理（Web）
+# GetGroomerFlow：独立宠物美容师预约与客户管理（Web）
+
+> **对外品牌 / 域名**：GetGroomerFlow · **getgroomerflow.com**（仓库目录名可为 GroomerFlow，不必改）
 
 > **Cursor / Agent 开发真源**：实现以 **「Agent 必读」**、**「MVP 验收清单」**、**「数据模型草案」**、**「路由与页面」** 为准。  
 > 标 **背景 · 非实现范围** 的章节供产品与推广参考，**不得**当作当期编码任务（除非用户当条指定）。
@@ -62,7 +64,7 @@
 
 | 维度 | 内容 |
 | :--- | :--- |
-| 产品名称 | GroomerFlow |
+| 产品名称 | GetGroomerFlow |
 | 对外定位（EN） | *Simple booking & client records for independent pet groomers — transparent pricing, no kennel bloat.* |
 | 目标用户 | 欧美 **独立** 宠物美容师、小型工作室（1～2 人） |
 | 核心价值 | 一个 **预约链接** 减少来回私信；**邮件提醒** 降低爽约；宠物档案集中；**手机浏览器** 可查看今日预约 |
@@ -75,12 +77,12 @@
 
 ### 2.1 竞品简表（2026 参考）
 
-| 产品 | 大致月费 | 强项 | GroomerFlow 错位 |
+| 产品 | 大致月费 | 强项 | GetGroomerFlow 错位 |
 | :--- | :--- | :--- | :--- |
 | MoeGo | $49～159+ | 移动 van、路由、支付、宠物 CRM | 更重、更贵；SMS 常另收费 |
 | Gingr | $99+ | 寄宿 + 多服务 | 单人美容店往往过剩 |
 | Square / Calendly | 低～中 | 通用预约 | 缺宠物专业字段与美容记录 |
-| GroomerFlow | 托管约 $17～25/月 | 极简、低价、开源可自部署 | 不拼全功能 OS |
+| GetGroomerFlow | 托管约 $17～25/月 | 极简、低价、开源可自部署 | 不拼全功能 OS |
 
 ### 2.2 购买动机假设（调研验证）
 
@@ -215,7 +217,7 @@ Reddit / Facebook 群组优先验证排序（见 §十五）：
 | **Pro** | $29/月 或 **$299/年** | Starter + 复购提醒 + 记账 + 自助端 + **SMS 额度** | 升级 |
 | **Trial** | 14 天 | Starter 能力；**无需信用卡**（实现 Phase 3 支付时落地） | 拉新 |
 
-**价值锚点**：MoeGo 等约 **$588+/年起**；GroomerFlow 主打 **solo 可负担、价格透明**（功能更少但够用）。
+**价值锚点**：MoeGo 等约 **$588+/年起**；GetGroomerFlow 主打 **solo 可负担、价格透明**（功能更少但够用）。
 
 **收入说明**：MVP **不以支付 GMV 抽成为主**；若 Phase 2 接 Stripe 订金，以 **降 no-show** 为目的，非复制 MoeGo 支付 OS。
 
@@ -311,7 +313,8 @@ UI 与 API 将来宾功能 **统一经此函数**，避免散落 `if (plan === '
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 匿名公钥 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 仅服务端（公开预约写入等） |
-| `NEXTAUTH_URL` / `NEXTAUTH_SECRET` | 会话 |
+| `NEXT_PUBLIC_APP_URL` | 对外站点根 URL（预约链接），生产 **`https://getgroomerflow.com`** |
+| `NEXTAUTH_URL` / `AUTH_SECRET` | 会话；生产同域名，本地开发用 `http://localhost:3000` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google 登录 |
 | `RESEND_API_KEY` 或 `SMTP_*` | 邮件 |
 

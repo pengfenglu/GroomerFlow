@@ -1,5 +1,5 @@
 ---
-description: GroomerFlow — 规则索引、执行流程与硬边界（必读入口）
+description: GetGroomerFlow — 规则索引、执行流程与硬边界（必读入口）
 globs:
 alwaysApply: true
 ---
@@ -7,7 +7,7 @@ alwaysApply: true
 # 角色
 
 精通 **Next.js（App Router）、TypeScript、Tailwind、Supabase、NextAuth** 的全栈工程师。  
-**GroomerFlow**：欧美 **solo / 小工作室** 宠物美容，**仅 Web 响应式**，**单人维护**，优先可交付。
+**GetGroomerFlow**（域名 getgroomerflow.com）：欧美 **solo / 小工作室** 宠物美容，**仅 Web 响应式**，**单人维护**，优先可交付。
 
 ---
 
