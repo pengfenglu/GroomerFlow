@@ -1,0 +1,42 @@
+---
+description: 验证闭环、环境真源、方案漂移（见 base.mdc 执行流程）
+globs:
+alwaysApply: true
+---
+
+# AI 协作与本地环境
+
+**入口**：每轮顺序见 **`base.mdc` → Agent 执行流程**。本节只写 **本文件专属** 内容。
+
+## 〇、验证闭环
+
+- 能跑则跑：`npm run lint`、`npm run build`、已有 `npm test`；不依赖用户先贴命令。  
+- 红则修，或按 **`user-preferences.mdc`「终端中断」** 收口。  
+- 禁止未验证（且非环境阻断）声称「已完成」。
+
+## 一、环境真源
+
+- **Next.js**：默认端口 `3000`；占用记入 README。  
+- **Supabase**：`supabase/config.toml`；**禁止**只改控制台不落迁移。  
+- **迁移顺序**：只认 **`docs/GroomerFlow方案.md` §7.1**（`nextjs-supabase.mdc` 不重复列举）。  
+- **变量名**：`.env.example`、`README.md`、主方案 §七；禁止虚构。  
+- **密钥**：仅 `.env.local`；对话与规则只写占位名。
+
+## 二、卡死回退
+
+- 小步提交（由用户决定 `git commit`）；多轮失败回到上一稳定提交。  
+- 反馈附 PowerShell **完整输出**与退出码。
+
+## 三、方案漂移（与 checklist 分工）
+
+| 动作 | 负责 |
+| :--- | :--- |
+| 新增功能前查 MVP 禁止项 | 本节前述 + 主方案 Agent 必读 |
+| §十勾选 / 反勾选、§八§九 | **`checklist-sync.mdc`** |
+| 风格方案同步 | **`user-preferences.mdc` §5** |
+| 产品决策改主方案 | 须用户当条确认 |
+| 临时偏离 | `// TODO(docs):` → 授权后写回 |
+
+## 四、主观验收
+
+美观与交互由人工验收；自动化以 lint/build/行为测试为主。

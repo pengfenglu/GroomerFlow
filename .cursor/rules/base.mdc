@@ -1,0 +1,105 @@
+---
+description: GroomerFlow — 规则索引、执行流程与硬边界（必读入口）
+globs:
+alwaysApply: true
+---
+
+# 角色
+
+精通 **Next.js（App Router）、TypeScript、Tailwind、Supabase、NextAuth** 的全栈工程师。  
+**GroomerFlow**：欧美 **solo / 小工作室** 宠物美容，**仅 Web 响应式**，**单人维护**，优先可交付。
+
+---
+
+# 单一真源（查表，勿在规则里复述细则）
+
+| 内容 | 真源 |
+| :--- | :--- |
+| 产品、MVP、数据模型、路由、§十验收 | **`docs/GroomerFlow方案.md`** |
+| 视觉、交互、英文文案、Intl 格式 | **`docs/GroomerFlow风格方案.md`** |
+| 技术实现（迁移、RLS、API、领域表） | **`nextjs-supabase.mdc`** + 主方案 §七～§十 |
+| 验证闭环、环境、迁移顺序、MVP 前置检查 | **`ai-collaboration-local-env.mdc`** |
+| 验收勾选 / 反勾选、§八§九追齐 | **`checklist-sync.mdc`** |
+| 命名、Git scope、TS 习惯 | **`code-style.mdc`** |
+| md 写入授权、复制格式 | **`user-preferences.mdc`** |
+| 环境变量、本地启动 | **`.env.example`**、**`README.md`** |
+
+**冲突优先级**：用户当条明确指令 **>** 主方案（功能） **>** 风格方案（UI） **>** 本文件硬边界 **>** 子规则。  
+功能与 UI 冲突：**功能以主方案为准，视觉以风格方案为准**。
+
+**与用户指令冲突时**（须说明出处，禁止静默偏离）：
+
+1. 指出冲突的主方案章节 / 风格方案章节 / 本文件哪条。  
+2. 给出选择：**改方案**（须用户确认）或 **按现方案改实现**（Phase 2+ / §十六 须用户指定阶段）。  
+3. 不得绕开规则强行实现。
+
+---
+
+# Agent 执行流程（每轮按序）
+
+## 1. 读什么
+
+| 任务类型 | 必读 |
+| :--- | :--- |
+| **UI / 页面 / 组件** | `docs/GroomerFlow风格方案.md`（§四组件、§五布局、§八格式、§九文案） |
+| **API / 数据库 / 预约逻辑** | `docs/GroomerFlow方案.md`（Agent 必读、§七～§十）+ `nextjs-supabase.mdc` |
+| **全栈功能** | 上两者 + 本表 |
+| **仅改规则 / 问答** | 本文件即可 |
+
+## 2. 动手前（门禁）
+
+- 对照主方案 **「Agent 必读 → MVP 明确不做」**；属 **§十六** 的须用户当条指定 Phase。  
+- 详情见 **`ai-collaboration-local-env.mdc` §四**。
+
+## 3. 实现
+
+| 维度 | 执行 |
+| :--- | :--- |
+| 后端 / DB / 路由 | 遵守 **`nextjs-supabase.mdc`**（含 §7.1 迁移顺序、RLS、`POST /api/book`） |
+| UI | 遵守 **`docs/GroomerFlow风格方案.md`**；未定组件 → **shadcn/ui** + 风格 §一～§四 主题（`green-800`、`rounded-lg`、slate） |
+| 代码风格 | **`code-style.mdc`** |
+| 组件库 | **禁止** MUI、Element Plus 等与 shadcn 并行的第二套 UI 库 |
+
+## 4. 验证
+
+- 改动 `app/`、`components/`、`lib/`、`supabase/`、`package.json`：**必须**跑 `npm run lint`、`npm run build`（及已有 test）。  
+- 细则与中断收口：**`ai-collaboration-local-env.mdc` §〇**。
+
+## 5. 收尾
+
+- §十验收：`[ ]`↔`[x]`、§八§九追齐 → **`checklist-sync.mdc`**  
+- UI 变更同步风格方案对应节 → **`user-preferences.mdc` §5**  
+- 回复须写：**已执行命令** / 通过 / 失败 / 未跑原因  
+- 仅改 `.cursor/rules` 或纯讨论：一句说明为何未跑 npm
+
+---
+
+# 架构硬边界（摘要）
+
+细则在子规则与方案；此处只列 **不可违反** 项：
+
+| 边界 | 要求 |
+| :--- | :--- |
+| 形态 | 仅 Web；禁 RN/Flutter/原生 App（用户明确要求除外） |
+| 栈 | 单仓 Next.js + Supabase + NextAuth；禁第二后端 |
+| ICP | 独立美容小店；禁寄宿/日托主线、多门店、van 路由 |
+| MVP 范围 | 主方案 §三.1 + `/book/[slug]` + `POST /api/book` + 新用户引导 |
+| MVP 禁止 | §三.2、§三.3、§十六；见主方案清单 |
+| 安全 | 密钥仅 env；禁 `.env` 入库、禁 client 暴露 service role（见 `nextjs-supabase.mdc`） |
+| 依赖 | 改 `package.json` 须用户确认 + 同提交 `package-lock.json` |
+
+---
+
+# 防漏读速查（不替代读 docs；写代码时须遵守）
+
+即使未 `@` 方案文档，下列也 **不得违反**（细节见指针列）：
+
+| # | 约束 | 细则位置 |
+| :--- | :--- | :--- |
+| 1 | 公开预约 **仅** `POST /api/book` + **service role**；须 **冲突检测**；`/book` 无登录 | 主方案 §7.3、§九；`nextjs-supabase.mdc` |
+| 2 | 迁移顺序 **§7.1**；时间 **UTC 存**、按 `profiles.timezone` 展示 | 主方案 §7.1～7.2 |
+| 3 | 全表 **RLS** + `groomer_id`；禁止 client 暴露 service role | `nextjs-supabase.mdc` |
+| 4 | MVP 不做 §三.2/§三.3/§十六；新增功能前先查主方案「MVP 明确不做」 | 主方案 Agent 必读 |
+| 5 | UI：**英文** + `Intl`；主色 `green-800`；未定组件 **shadcn** + 风格 §一～§四 | `docs/GroomerFlow风格方案.md` |
+| 6 | 密钥不进 Git；日志不输出完整客户 PII | 主方案、本文件硬边界 |
+| 7 | 收尾：lint + build；§十 勾选与代码一致 | `ai-collaboration` §〇；`checklist-sync` |

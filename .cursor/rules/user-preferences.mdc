@@ -1,0 +1,28 @@
+---
+description: 用户 md 授权与交付格式（流程见 base.mdc）
+globs:
+alwaysApply: true
+---
+
+# 用户偏好
+
+## md 文件
+
+- **禁止**擅自新建/改写 `.md`（含 `README`），除非用户同条明确授权（如「保存为 md」「优化方案」「写回清单」等）。  
+- **例外（无需再说「保存为 md」）**：按 **`checklist-sync.mdc`** / 本文件 §2 同步 **`docs/GroomerFlow方案.md`**、**`docs/GroomerFlow风格方案.md`**。
+
+## 可复制内容
+
+- 需用户复制的命令/段落 → **单个** Markdown 代码块。
+
+## 文档同步（§2）
+
+| 文件 | 何时改 |
+| :--- | :--- |
+| `docs/GroomerFlow方案.md` | §十勾选/反勾选；§八§九与实现一致 → **`checklist-sync.mdc`** |
+| `docs/GroomerFlow风格方案.md` | 主色、公开页、组件规范等 UI 落地变更时，同轮简短修订 |
+
+## 交付节奏
+
+- 验证与汇报：**`base.mdc` §4～§5**、**`ai-collaboration-local-env.mdc` §〇**。  
+- 终端被拒绝/沙箱阻断：不反复重试；给可复制验证命令；禁止虚构已通过。

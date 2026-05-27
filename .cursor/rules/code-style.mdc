@@ -1,0 +1,49 @@
+---
+description: TS/React 命名与 Git 提交（流程见 base.mdc §3）
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+alwaysApply: false
+---
+
+# 编码与提交
+
+**UI 视觉**：**`docs/GroomerFlow风格方案.md`**，非本文件。
+
+## 命名
+
+| 类别 | 约定 | 示例 |
+| :--- | :--- | :--- |
+| 组件文件 | `PascalCase.tsx` | `AppointmentCard.tsx` |
+| 非组件模块 | **`kebab-case.ts`（唯一）** | `email-templates.ts` |
+| 函数/变量 | `camelCase` | `fetchAppointments` |
+| 常量 | `UPPER_SNAKE_CASE` | `DEFAULT_PAGE_SIZE` |
+| DB / JSON | `snake_case` | `groomer_id` |
+
+## 代码
+
+- 行宽约 100；导入：React/Next → 第三方 → `@/`。  
+- 公开 API 须有类型；避免 `any`。  
+- Server Component 优先；service role 仅 Route Handler / Server Action。
+
+## Git（Conventional Commits）
+
+`feat` `fix` `refactor` `test` `docs` `chore`
+
+| scope | 含义 |
+| :--- | :--- |
+| `booking` | `/book/[slug]` + `POST /api/book` |
+| `onboarding` | 新用户引导条 |
+| `clients` | 客户/宠物 |
+| `calendar` | 后台日历 |
+| `reminders` | 邮件 / `reminder_logs` |
+| `settings` | 服务项、时段、店铺 |
+| `auth` | 登录注册 |
+| `supabase` | 迁移 / RLS |
+| `ui` | 通用组件 |
+
+## PR 自检
+
+- lint + build；迁移+RLS；无密钥进 Git；lock 同提交；MVP 未越界（**`base.mdc` §2**）。

@@ -1,0 +1,74 @@
+---
+description: Next.js / Supabase / NextAuth 实现细则（流程见 base.mdc）
+globs:
+  - "app/**/*"
+  - "components/**/*"
+  - "lib/**/*"
+  - "types/**/*"
+  - "supabase/**/*"
+alwaysApply: true
+---
+
+# 适用范围
+
+实现 **`app/`**、**`components/`**、**`lib/`**、**`types/`**、**`supabase/`** 时读本文件。  
+**流程与门禁**：**`base.mdc`**。**UI 样式**：**`docs/GroomerFlow风格方案.md`**（非本文件）。
+
+契约真源：**`docs/GroomerFlow方案.md`** §七～§十；§十六 **非 MVP**。
+
+# 目录结构
+
+```
+app/(auth)/          login, register
+app/(dashboard)/     dashboard, clients, calendar, records, settings
+app/book/[slug]/     公开预约（无登录）
+app/api/book/        POST 写入（service_role）
+lib/                 supabase-client, auth, timezone, email-templates, subscription
+supabase/migrations/
+```
+
+# Next.js
+
+- App Router；`(auth)` / `(dashboard)` 分组。  
+- 默认 Server Component；交互再用 `'use client'`。  
+- 改路由 → 同步主方案 **§九**。  
+- `dashboard`、`calendar` 窄屏可用（风格方案 §5.2）。
+
+# Supabase
+
+- 迁移：**仅** `supabase/migrations/*.sql`；顺序见主方案 **§7.1**（不在此重复表名链）。  
+- 时间：`timestamptz` UTC；展示 → **`lib/timezone.ts`** + `profiles.timezone`（§7.2）。  
+- `groomer_id` = `profiles.id` = `auth.users.id`；全业务表必有。  
+- **RLS** 默认拒绝；后台 `auth.uid()` 隔离。  
+- **公开预约**：仅 **`POST /api/book`** + service role（或 security definer RPC）；**禁止**客户端 service role / 匿名直写 `appointments`。  
+- 浏览器：anon + RLS；`NEXT_PUBLIC_*` 不得含 service role。
+
+# NextAuth
+
+- 注册后创建 `profiles`；`(dashboard)/*` 未登录 → `/login`。
+
+# MVP 领域速查
+
+| 模块 | 表 / 路由 | 要点 |
+| :--- | :--- | :--- |
+| 客户 | `clients`, `pets` | 专业字段；搜索 |
+| 公开预约 | `/book/[slug]`, `/api/book` | `source=public_booking`；**冲突检测** |
+| 日历 | `appointments`, `services`, `availability_rules` | 周/日 |
+| 提醒 | `reminder_logs`, `email-templates` | email；`channel` 预留 sms |
+| 记录 | `service_records` | 按 pet 历史 |
+| 引导 | onboarding UI | 首次 dashboard 三步 |
+| 门控 | `lib/subscription.ts` | `canAccessFeature` MVP 恒 `true` |
+
+# 禁止（技术层）
+
+- 公开预约无冲突检测写入。  
+- Client 暴露 service role / 支付密钥。  
+- 绕过 RLS，仅前端过滤 `groomer_id`。  
+- 第二套 REST 后端（除非用户明确要求）。  
+
+**产品层禁止**（寄宿、§三.2/§十六等）：见 **`base.mdc`** 与主方案，不在此重复。
+
+# 测试
+
+- 优先单测：时间冲突、状态迁移。  
+- 无 CI 时：**lint + build** 为门禁（**`ai-collaboration-local-env.mdc` §〇**）。
