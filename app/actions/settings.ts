@@ -14,6 +14,7 @@ const profileSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   timezone: z.string().min(3),
   bio: z.string().max(500).optional(),
+  avatar_url: z.union([z.literal(""), z.string().url().max(2048)]),
 });
 
 const serviceSchema = z.object({
@@ -57,6 +58,7 @@ export async function updateProfileAction(formData: FormData) {
     booking_slug: formData.get("booking_slug"),
     timezone: formData.get("timezone"),
     bio: formData.get("bio") || undefined,
+    avatar_url: (formData.get("avatar_url")?.toString() ?? "").trim(),
   });
 
   const { error } = await supabase
@@ -66,6 +68,7 @@ export async function updateProfileAction(formData: FormData) {
       booking_slug: parsed.booking_slug,
       timezone: parsed.timezone,
       bio: parsed.bio || null,
+      avatar_url: parsed.avatar_url || null,
     })
     .eq("id", groomerId);
 

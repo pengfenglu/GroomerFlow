@@ -27,11 +27,16 @@ export default async function DashboardPage() {
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
 
   const [
     { count: clientCount },
     { count: serviceCount },
     { data: todayAppointments },
+    { count: publicBookingsTotal },
+    { count: publicBookingsWeek },
+    { data: confirmationLogs },
   ] = await Promise.all([
     supabase
       .from("clients")
@@ -52,7 +57,33 @@ export default async function DashboardPage() {
       .gte("starts_at", todayStart.toISOString())
       .lte("starts_at", todayEnd.toISOString())
       .order("starts_at", { ascending: true }),
+    supabase
+      .from("appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("groomer_id", groomerId)
+      .eq("source", "public_booking")
+      .neq("status", "cancelled"),
+    supabase
+      .from("appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("groomer_id", groomerId)
+      .eq("source", "public_booking")
+      .neq("status", "cancelled")
+      .gte("created_at", weekAgo.toISOString()),
+    supabase
+      .from("reminder_logs")
+      .select("status")
+      .eq("groomer_id", groomerId)
+      .eq("kind", "confirmation"),
   ]);
+
+  const confirmationsSent =
+    confirmationLogs?.filter((r) => r.status === "sent").length ?? 0;
+  const confirmationsTotal = confirmationLogs?.length ?? 0;
+  const emailDeliveryRate =
+    confirmationsTotal > 0
+      ? Math.round((confirmationsSent / confirmationsTotal) * 100)
+      : null;
 
   const bookingUrl = publicBookUrl(profile.booking_slug);
 
@@ -70,6 +101,33 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-sm text-slate-600">Today&apos;s schedule</p>
       </div>
+
+      <Card>
+        <CardTitle>Booking insights</CardTitle>
+        <CardDescription>Track how your public page is performing.</CardDescription>
+        <CardContent className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-2xl font-semibold text-slate-900">
+              {publicBookingsTotal ?? 0}
+            </p>
+            <p className="text-xs text-slate-600">Online bookings (all time)</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-slate-900">
+              {publicBookingsWeek ?? 0}
+            </p>
+            <p className="text-xs text-slate-600">Online bookings (last 7 days)</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-slate-900">
+              {emailDeliveryRate !== null ? `${emailDeliveryRate}%` : "—"}
+            </p>
+            <p className="text-xs text-slate-600">
+              Confirmation emails sent ({confirmationsSent}/{confirmationsTotal})
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardTitle>Booking link</CardTitle>

@@ -102,7 +102,22 @@ export default async function SettingsPage() {
                 name="bio"
                 rows={2}
                 defaultValue={profile.bio ?? ""}
+                placeholder="We treat your pets like family."
               />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="avatar_url">Profile photo URL (optional)</Label>
+              <Input
+                id="avatar_url"
+                name="avatar_url"
+                type="url"
+                placeholder="https://…"
+                defaultValue={profile.avatar_url ?? ""}
+              />
+              <p className="text-xs text-slate-500">
+                Paste a public image link (e.g. from Instagram or your website). Shown on
+                your booking page.
+              </p>
             </div>
             <Button type="submit">Save changes</Button>
           </form>

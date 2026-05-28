@@ -7,6 +7,7 @@ export type AppointmentEmailContext = {
   clientName: string;
   contactEmail?: string;
   notes?: string;
+  calendarUrl?: string;
 };
 
 export function renderEmailTemplate(
@@ -17,11 +18,18 @@ export function renderEmailTemplate(
 
   if (templateId === "confirmation") {
     const subject = `Appointment confirmed — ${ctx.businessName}`;
+    const calendarLine = ctx.calendarUrl
+      ? `\nAdd to your calendar: ${ctx.calendarUrl}\n`
+      : "";
+    const calendarHtml = ctx.calendarUrl
+      ? `<p><a href="${escapeHtml(ctx.calendarUrl)}">Add to calendar</a></p>`
+      : "";
     const text = [
       `Hi ${ctx.clientName},`,
       "",
       `Your grooming appointment for ${ctx.petName} is confirmed.`,
       `When: ${when}`,
+      calendarLine,
       "",
       `— ${ctx.businessName}`,
     ].join("\n");
@@ -31,6 +39,7 @@ export function renderEmailTemplate(
       html: `<p>Hi ${escapeHtml(ctx.clientName)},</p>
 <p>Your grooming appointment for <strong>${escapeHtml(ctx.petName)}</strong> is confirmed.</p>
 <p><strong>When:</strong> ${escapeHtml(when)}</p>
+${calendarHtml}
 <p>— ${escapeHtml(ctx.businessName)}</p>`,
     };
   }

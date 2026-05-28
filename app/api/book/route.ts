@@ -9,6 +9,7 @@ import {
 } from "@/lib/booking";
 import { sendTransactionalEmail } from "@/lib/email";
 import { formatInProfileTimezone } from "@/lib/timezone";
+import { getPublicAppOrigin } from "@/lib/site";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 const bookSchema = z.object({
@@ -122,6 +123,8 @@ export async function POST(request: Request) {
     profile.timezone,
   );
 
+  const calendarUrl = `${getPublicAppOrigin()}/api/calendar/ics?appointment_id=${appointment.id}`;
+
   const emailResult = await sendTransactionalEmail({
     to: input.email,
     templateId: "confirmation",
@@ -131,6 +134,7 @@ export async function POST(request: Request) {
       clientName: input.full_name,
       startsAtLocal,
       notes: input.notes,
+      calendarUrl,
     },
   });
 
