@@ -8,8 +8,18 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# So you do not need to set PATH manually each time (Windows).
+$gitCmd = "D:\Program Files\Git\cmd"
+$nodeDir = "D:\Program Files\nodejs"
+if (Test-Path $gitCmd) { $env:Path = "$gitCmd;$nodeDir;" + $env:Path }
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
+
+# Keep Chinese commit messages readable on Windows.
+chcp 65001 | Out-Null
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
 function Invoke-Git {
   param([string[]]$GitArgs)
@@ -44,7 +54,15 @@ Write-Host "`nCommit: $Message" -ForegroundColor Green
 Invoke-Git @("commit", "-m", $Message)
 
 Write-Host "`nPushing to GitHub..." -ForegroundColor Green
-Invoke-Git @("push")
+try {
+  Invoke-Git @("push")
+} catch {
+  Write-Host "`nPush failed (network). Your commit is saved on this PC." -ForegroundColor Yellow
+  Write-Host "When GitHub is reachable, run only:" -ForegroundColor Yellow
+  Write-Host "  cd d:\cursor\GroomerFlow" -ForegroundColor White
+  Write-Host "  git push`n" -ForegroundColor White
+  exit 1
+}
 
 Write-Host "`nDone. Vercel will redeploy in 1-3 minutes if the project is connected." -ForegroundColor Cyan
 Write-Host "Check: https://www.getgroomerflow.com`n"
