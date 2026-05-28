@@ -72,58 +72,65 @@ export function AvailabilityRuleRow({ rule }: AvailabilityRuleRowProps) {
 
   return (
     <li className="rounded-lg border border-slate-200 p-4">
-      <form onSubmit={handleSave} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+      <form onSubmit={handleSave} className="space-y-1">
         <input type="hidden" name="id" value={rule.id} />
-        <div className="space-y-1">
-          <Label htmlFor={`day-${rule.id}`}>Day</Label>
-          <select
-            id={`day-${rule.id}`}
-            name="day_of_week"
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-            className="flex h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800"
-          >
-            {DAYS.map((label, index) => (
-              <option key={label} value={index}>
-                {label}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+          <div className="space-y-1">
+            <Label htmlFor={`day-${rule.id}`}>Day</Label>
+            <select
+              id={`day-${rule.id}`}
+              name="day_of_week"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              className="flex h-10 w-full rounded-lg border border-slate-200 px-3 text-sm focus:border-green-800 focus:outline-none focus:ring-1 focus:ring-green-800"
+            >
+              {DAYS.map((label, index) => (
+                <option key={label} value={index}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`start-${rule.id}`}>Start</Label>
+            <Input
+              id={`start-${rule.id}`}
+              name="start_time"
+              type="time"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`end-${rule.id}`}>End</Label>
+            <Input
+              id={`end-${rule.id}`}
+              name="end_time"
+              type="time"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              required
+            />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-1">
+            <SaveButton dirty={dirty} savedFlash={savedFlash} pending={isSaving} />
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor={`start-${rule.id}`}>Start</Label>
-          <Input
-            id={`start-${rule.id}`}
-            name="start_time"
-            type="time"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor={`end-${rule.id}`}>End</Label>
-          <Input
-            id={`end-${rule.id}`}
-            name="end_time"
-            type="time"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            required
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 lg:col-span-1">
-          <SaveButton dirty={dirty} savedFlash={savedFlash} pending={isSaving} />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={isDeleting || isSaving}
-            onClick={handleDelete}
-            className="h-9 px-2 text-red-700 hover:bg-red-50 hover:text-red-800"
-          >
-            {isDeleting ? "Deleting…" : "Delete"}
-          </Button>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="hidden lg:block lg:col-span-3" aria-hidden />
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={isDeleting || isSaving}
+              onClick={handleDelete}
+              className="h-auto px-2 py-0 text-left text-sm text-red-700 hover:bg-red-50 hover:text-red-800"
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </Button>
+          </div>
         </div>
       </form>
     </li>
