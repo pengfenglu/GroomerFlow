@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { SetupNotice } from "@/components/setup-notice";
+import { BookingLinkCopy } from "@/components/dashboard/booking-link-copy";
 import { OnboardingBanner } from "@/components/onboarding-banner";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -132,10 +132,11 @@ export default async function DashboardPage() {
       <Card>
         <CardTitle>Booking link</CardTitle>
         <CardDescription>Share on Instagram or text messages.</CardDescription>
-        <CardContent className="mt-2 break-all text-sm text-green-800">
-          <Link href={`/book/${profile.booking_slug}`} className="hover:underline">
-            {bookingUrl}
-          </Link>
+        <CardContent>
+          <BookingLinkCopy
+            url={bookingUrl}
+            previewHref={`/book/${profile.booking_slug}`}
+          />
         </CardContent>
       </Card>
 

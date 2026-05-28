@@ -1,4 +1,5 @@
 import { SetupNotice } from "@/components/setup-notice";
+import { BookingLinkCopy } from "@/components/dashboard/booking-link-copy";
 import { AvailabilityRuleRow } from "@/components/settings/availability-rule-row";
 import { ServiceRow } from "@/components/settings/service-row";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,9 @@ export default async function SettingsPage() {
       <Card>
         <CardTitle>Public booking link</CardTitle>
         <CardDescription>Copy for Instagram bio or SMS.</CardDescription>
-        <CardContent className="mt-2 break-all text-sm text-green-800">{bookingUrl}</CardContent>
+        <CardContent>
+          <BookingLinkCopy url={bookingUrl} />
+        </CardContent>
       </Card>
 
       <Card>
