@@ -134,13 +134,14 @@ export async function POST(request: Request) {
     },
   });
 
-  if (emailResult.ok) {
-    await supabase
-      .from("reminder_logs")
-      .update({ status: "sent", sent_at: new Date().toISOString() })
-      .eq("appointment_id", appointment.id)
-      .eq("kind", "confirmation");
-  }
+  await supabase
+    .from("reminder_logs")
+    .update({
+      status: emailResult.ok ? "sent" : "failed",
+      sent_at: emailResult.ok ? new Date().toISOString() : null,
+    })
+    .eq("appointment_id", appointment.id)
+    .eq("kind", "confirmation");
 
   return NextResponse.json({
     ok: true,

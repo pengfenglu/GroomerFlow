@@ -20,8 +20,8 @@ Set URLs (already in `.env.production` for deploy):
 
 | Variable | Local dev (`.env.local`) | Production |
 |----------|--------------------------|------------|
-| `NEXT_PUBLIC_APP_URL` | `https://getgroomerflow.com` | same |
-| `NEXTAUTH_URL` | `http://localhost:3000` | `https://getgroomerflow.com` (`.env.production`) |
+| `NEXT_PUBLIC_APP_URL` | `https://www.getgroomerflow.com` | `https://www.getgroomerflow.com` |
+| `NEXTAUTH_URL` | `http://localhost:3000` | `https://www.getgroomerflow.com` (Vercel env) |
 
 Fill in Supabase URL/keys and generate a secret:
 
@@ -62,13 +62,40 @@ npm run build
 | `/book/[slug]` | Public booking (no login) |
 | `POST /api/book` | Public booking API (service role) |
 
-## Email (optional)
+## Production enhancements (email, reminders, Google)
 
-Set `RESEND_API_KEY` in `.env.local`. Without it, dev mode logs email bodies to the server console.
+### Resend (confirmation + day-before emails)
 
-## Cron (24h reminders)
+1. Create an API key at [resend.com](https://resend.com).
+2. Verify domain `getgroomerflow.com` (or use Resend sandbox while testing).
+3. Add to **Vercel → Environment Variables** (and `.env.local` for local tests):
+   - `RESEND_API_KEY=re_...`
+   - `EMAIL_FROM=GetGroomerFlow <bookings@getgroomerflow.com>` (must match a verified sender)
 
-`GET /api/cron/reminders` with header `Authorization: Bearer <CRON_SECRET>` — configure on Vercel Cron after deploy.
+Without `RESEND_API_KEY`, dev logs `[email:dev]` to the terminal; production marks emails as `failed` in `reminder_logs` but bookings still succeed.
+
+### Vercel Cron (day-before reminders)
+
+`vercel.json` runs `/api/cron/reminders` daily at **15:00 UTC**.
+
+1. Generate a secret: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+2. Add **`CRON_SECRET`** to Vercel env (Production + Preview).
+3. Redeploy. Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically.
+
+Manual test:
+
+```powershell
+curl.exe -H "Authorization: Bearer YOUR_CRON_SECRET" https://www.getgroomerflow.com/api/cron/reminders
+```
+
+### Google sign-in (groomers, optional)
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → OAuth client (Web).
+2. Redirect URIs:
+   - `http://localhost:3000/api/auth/callback/google`
+   - `https://www.getgroomerflow.com/api/auth/callback/google`
+3. Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to Vercel + `.env.local`, then Redeploy.
+4. Login/Register show **Continue with Google** when both vars are set.
 
 ## License
 

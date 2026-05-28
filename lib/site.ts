@@ -1,5 +1,5 @@
 /** Canonical production origin (custom domain). */
-export const PRODUCTION_APP_ORIGIN = "https://getgroomerflow.com";
+export const PRODUCTION_APP_ORIGIN = "https://www.getgroomerflow.com";
 
 /**
  * Public site URL for booking links, emails, and metadata.

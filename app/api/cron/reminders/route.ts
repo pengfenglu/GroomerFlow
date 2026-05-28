@@ -20,8 +20,9 @@ export async function GET(request: Request) {
 
   const supabase = createSupabaseServiceClient();
   const now = new Date();
-  const windowStart = addHours(now, 23);
-  const windowEnd = addHours(now, 25);
+  // Wider window for once-daily Vercel Cron (Hobby). Hourly cron can narrow to 23–25h.
+  const windowStart = addHours(now, 20);
+  const windowEnd = addHours(now, 28);
 
   const { data: appointments, error } = await supabase
     .from("appointments")

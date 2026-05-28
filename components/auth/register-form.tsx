@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 
 const TIMEZONES = [
   "America/Los_Angeles",
@@ -21,7 +22,11 @@ const TIMEZONES = [
   "Pacific/Auckland",
 ];
 
-export function RegisterForm() {
+type RegisterFormProps = {
+  showGoogleAuth?: boolean;
+};
+
+export function RegisterForm({ showGoogleAuth = false }: RegisterFormProps) {
   const router = useRouter();
   const [businessName, setBusinessName] = useState("");
   const [email, setEmail] = useState("");
@@ -127,6 +132,22 @@ export function RegisterForm() {
             {loading ? "Creating account…" : "Start free trial"}
           </Button>
         </form>
+        {showGoogleAuth ? (
+          <>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-200" />
+              </div>
+              <p className="relative mx-auto w-fit bg-white px-2 text-xs text-slate-500">
+                or
+              </p>
+            </div>
+            <GoogleSignInButton label="Sign up with Google" />
+            <p className="mt-2 text-center text-xs text-slate-500">
+              You can set your business name and hours in Settings after signing in.
+            </p>
+          </>
+        ) : null}
         <p className="mt-4 text-center text-sm text-slate-600">
           Already have an account?{" "}
           <Link href="/login" className="text-green-800 hover:underline">

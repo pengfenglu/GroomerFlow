@@ -1,4 +1,4 @@
-import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 const DEFAULT_LOCALE = "en-US";
 
@@ -32,13 +32,22 @@ export function localDateTimeToUtc(
   return fromZonedTime(localIso, timezone);
 }
 
+/** Sunday=0 … Saturday=6 in groomer timezone (matches Settings day picker). */
+export function dayOfWeekInTimezone(date: Date, timezone: string): number {
+  const iso = parseInt(formatInTimeZone(date, timezone, "i"), 10);
+  return iso === 7 ? 0 : iso;
+}
+
+export function dateStringInTimezone(date: Date, timezone: string): string {
+  return formatInTimeZone(date, timezone, "yyyy-MM-dd");
+}
+
 /** UTC instant → parts in groomer local calendar. */
 export function utcToZonedParts(utc: Date, timezone: string) {
-  const zoned = toZonedTime(utc, timezone);
   return {
-    dateStr: formatInTimeZone(zoned, timezone, "yyyy-MM-dd"),
-    timeStr: formatInTimeZone(zoned, timezone, "HH:mm"),
-    weekday: zoned.getDay(),
+    dateStr: dateStringInTimezone(utc, timezone),
+    timeStr: formatInTimeZone(utc, timezone, "HH:mm"),
+    weekday: dayOfWeekInTimezone(utc, timezone),
   };
 }
 

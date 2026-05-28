@@ -8,8 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 
-export function LoginForm() {
+type LoginFormProps = {
+  showGoogleAuth?: boolean;
+};
+
+export function LoginForm({ showGoogleAuth = false }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
@@ -69,6 +74,19 @@ export function LoginForm() {
             {loading ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+        {showGoogleAuth ? (
+          <>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-200" />
+              </div>
+              <p className="relative mx-auto w-fit bg-white px-2 text-xs text-slate-500">
+                or
+              </p>
+            </div>
+            <GoogleSignInButton callbackUrl={callbackUrl} />
+          </>
+        ) : null}
         <p className="mt-4 text-center text-sm text-slate-600">
           New here?{" "}
           <Link href="/register" className="text-green-800 hover:underline">

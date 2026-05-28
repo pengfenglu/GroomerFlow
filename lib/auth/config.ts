@@ -3,6 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import {
+  isGoogleAuthConfigured,
+  provisionGroomerForGoogleOAuth,
+} from "@/lib/auth/provision-oauth-groomer";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -47,16 +51,30 @@ export const authConfig = {
         };
       },
     }),
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ...(isGoogleAuthConfigured()
       ? [
           Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
           }),
         ]
       : []),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "google" || !user.email) {
+        return true;
+      }
+
+      const groomerId = await provisionGroomerForGoogleOAuth({
+        email: user.email,
+        name: user.name,
+      });
+      if (!groomerId) return false;
+
+      user.id = groomerId;
+      return true;
+    },
     async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;

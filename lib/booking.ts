@@ -1,8 +1,11 @@
 import { addDays, addMinutes, parseISO } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AvailabilityRule, Appointment } from "@/types/database";
-import { localDateTimeToUtc } from "@/lib/timezone";
+import {
+  dateStringInTimezone,
+  dayOfWeekInTimezone,
+  localDateTimeToUtc,
+} from "@/lib/timezone";
 
 export type BookableSlot = {
   startsAtUtc: string;
@@ -64,9 +67,9 @@ export function buildBookableSlots(params: {
   const now = new Date();
 
   for (let d = 0; d < daysAhead; d += 1) {
-    const zonedDay = toZonedTime(addDays(now, d), timezone);
-    const dayOfWeek = zonedDay.getDay();
-    const dateStr = formatDateInTz(zonedDay, timezone);
+    const dayStart = addDays(now, d);
+    const dayOfWeek = dayOfWeekInTimezone(dayStart, timezone);
+    const dateStr = dateStringInTimezone(dayStart, timezone);
 
     const dayRules = rules.filter((r) => r.day_of_week === dayOfWeek);
     for (const rule of dayRules) {
@@ -93,17 +96,6 @@ export function buildBookableSlots(params: {
   }
 
   return slots;
-}
-
-function formatDateInTz(date: Date, timezone: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  })
-    .format(date)
-    .replace(/\//g, "-");
 }
 
 export async function findOrCreateClientAndPet(

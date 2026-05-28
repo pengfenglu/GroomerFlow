@@ -10,7 +10,7 @@ const dashboardPrefixes = [
   "/settings",
 ];
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = Boolean(req.auth?.user?.id);
   const isAuthPage =
