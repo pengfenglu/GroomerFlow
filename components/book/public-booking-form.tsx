@@ -9,12 +9,17 @@ import type { Service } from "@/types/database";
 import type { BookableSlot } from "@/lib/booking";
 import { groupSlotsForSelect } from "@/lib/booking-slot-labels";
 import { cn } from "@/lib/utils";
+import { RescheduleNotice } from "@/components/book/reschedule-notice";
+import { formatPriceCents } from "@/lib/timezone";
 
 type PublicBookingFormProps = {
   slug: string;
   timezone: string;
   services: Service[];
   initialSlots: BookableSlot[];
+  rescheduleMessage: string;
+  depositRequired?: boolean;
+  depositCents?: number;
 };
 
 const STEPS = [
@@ -28,6 +33,9 @@ export function PublicBookingForm({
   timezone,
   services,
   initialSlots,
+  rescheduleMessage,
+  depositRequired = false,
+  depositCents = 2000,
 }: PublicBookingFormProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -94,20 +102,23 @@ export function PublicBookingForm({
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/book", {
+    const payload = {
+      slug,
+      service_id: serviceId,
+      starts_at: slotIso,
+      full_name: fullName,
+      email,
+      phone: phone || undefined,
+      pet_name: petName,
+      pet_breed: petBreed || undefined,
+      notes: notes || undefined,
+    };
+
+    const endpoint = depositRequired ? "/api/book/checkout" : "/api/book";
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slug,
-        service_id: serviceId,
-        starts_at: slotIso,
-        full_name: fullName,
-        email,
-        phone: phone || undefined,
-        pet_name: petName,
-        pet_breed: petBreed || undefined,
-        notes: notes || undefined,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -115,6 +126,11 @@ export function PublicBookingForm({
 
     if (!res.ok) {
       setError(data.error ?? "Booking failed. Please try another time.");
+      return;
+    }
+
+    if (depositRequired && data.checkout_url) {
+      window.location.href = data.checkout_url as string;
       return;
     }
 
@@ -275,6 +291,16 @@ export function PublicBookingForm({
                 onChange={(e) => setPetBreed(e.target.value)}
               />
             </div>
+            {depositRequired ? (
+              <p className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-900">
+                A {formatPriceCents(depositCents)} deposit is required to confirm your
+                appointment. You&apos;ll pay securely on the next screen (card hold;
+                charged only per the groomer&apos;s no-show policy).
+              </p>
+            ) : null}
+
+            <RescheduleNotice message={rescheduleMessage} />
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notes (optional)</Label>
               <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
@@ -307,7 +333,11 @@ export function PublicBookingForm({
               className="flex-1"
               disabled={loading || !slotIso || !selectedService}
             >
-              {loading ? "Booking…" : "Book My Appointment"}
+              {loading
+                ? "Please wait…"
+                : depositRequired
+                  ? "Continue to payment"
+                  : "Book My Appointment"}
             </Button>
           )}
         </div>

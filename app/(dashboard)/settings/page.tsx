@@ -1,5 +1,7 @@
 import { SetupNotice } from "@/components/setup-notice";
 import { BookingLinkCopy } from "@/components/dashboard/booking-link-copy";
+import { DownloadLinkButton } from "@/components/dashboard/download-link-button";
+import { InstagramBioCopy } from "@/components/dashboard/instagram-bio-copy";
 import { AvailabilityRuleRow } from "@/components/settings/availability-rule-row";
 import { ServiceRow } from "@/components/settings/service-row";
 import { Button } from "@/components/ui/button";
@@ -16,6 +18,8 @@ import { getProfileForGroomer } from "@/lib/data/profile";
 import { getGroomerContext } from "@/lib/data/groomer-context";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { publicBookUrl } from "@/lib/site";
+import { DepositSettings } from "@/components/settings/deposit-settings";
+import { getDefaultDepositCents, isStripeConfigured } from "@/lib/stripe/config";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +65,21 @@ export default async function SettingsPage() {
       <Card>
         <CardTitle>Public booking link</CardTitle>
         <CardDescription>Copy for Instagram bio or SMS.</CardDescription>
-        <CardContent>
+        <CardContent className="space-y-4">
           <BookingLinkCopy url={bookingUrl} />
+          <InstagramBioCopy
+            businessName={profile.business_name}
+            bookingUrl={bookingUrl}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardTitle>Your data</CardTitle>
+        <CardDescription>Export for backup or privacy requests.</CardDescription>
+        <CardContent className="mt-4 flex flex-wrap gap-3">
+          <DownloadLinkButton href="/api/export/clients" label="Export clients (CSV)" />
+          <DownloadLinkButton href="/api/export/account" label="Export all data (JSON)" />
         </CardContent>
       </Card>
 
@@ -216,11 +233,28 @@ export default async function SettingsPage() {
       </Card>
 
       <Card>
-        <CardTitle>Billing</CardTitle>
-        <CardDescription>Subscription billing — coming in Phase 3.</CardDescription>
+        <CardTitle>Booking deposit</CardTitle>
+        <CardDescription>
+          Optional Stripe hold for online bookings (reduces no-shows).
+        </CardDescription>
+        <CardContent className="mt-4">
+          <DepositSettings
+            depositEnabled={profile.deposit_enabled ?? false}
+            depositCents={profile.deposit_cents ?? getDefaultDepositCents()}
+            stripeConfigured={isStripeConfigured()}
+            defaultDepositCents={getDefaultDepositCents()}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardTitle>Subscription</CardTitle>
+        <CardDescription>
+          14-day trial · Lemon Squeezy billing when you subscribe.
+        </CardDescription>
         <CardContent className="mt-2">
           <a href="/settings/billing" className="text-sm text-green-800 hover:underline">
-            View billing placeholder →
+            Manage billing →
           </a>
         </CardContent>
       </Card>

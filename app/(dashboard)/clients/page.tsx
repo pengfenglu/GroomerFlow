@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createClientAction } from "@/app/actions/clients";
+import { DownloadLinkButton } from "@/components/dashboard/download-link-button";
 import { getGroomerContext } from "@/lib/data/groomer-context";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -32,7 +33,9 @@ export default async function ClientsPage({
   const needle = q?.trim().toLowerCase();
   const clients = needle
     ? (allClients ?? []).filter((c) => {
-        const hay = [c.full_name, c.phone, c.email]
+        const pets = (c.pets as { name: string }[] | null) ?? [];
+        const petNames = pets.map((p) => p.name).join(" ");
+        const hay = [c.full_name, c.phone, c.email, petNames]
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
@@ -47,16 +50,17 @@ export default async function ClientsPage({
           <h1 className="text-2xl font-semibold text-slate-900">Clients</h1>
           <p className="text-sm text-slate-600">Pet owners and their pets.</p>
         </div>
-        <form className="flex gap-2" action="/clients" method="get">
+        <form className="flex flex-wrap items-center gap-2" action="/clients" method="get">
           <Input
             name="q"
-            placeholder="Search name, phone, email"
+            placeholder="Search name, pet, phone, email"
             defaultValue={q}
             className="w-56"
           />
           <Button type="submit" variant="secondary">
             Search
           </Button>
+          <DownloadLinkButton href="/api/export/clients" label="Export CSV" />
         </form>
       </div>
 

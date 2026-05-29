@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildBookableSlots, fetchActiveAppointments } from "@/lib/booking";
+import { fetchPendingSlotBlockers } from "@/lib/booking/public-booking";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -58,16 +59,14 @@ export async function GET(request: Request) {
     })()),
   ]);
 
-  const appointments = await fetchActiveAppointments(
-    supabase,
-    profile.id,
-    rangeStart,
-    rangeEnd,
-  );
+  const [appointments, pending] = await Promise.all([
+    fetchActiveAppointments(supabase, profile.id, rangeStart, rangeEnd),
+    fetchPendingSlotBlockers(supabase, profile.id, rangeStart, rangeEnd),
+  ]);
 
   const slots = buildBookableSlots({
     rules: rules ?? [],
-    appointments,
+    appointments: [...appointments, ...pending],
     timezone: profile.timezone,
     durationMinutes: service.duration_minutes,
   });

@@ -9,6 +9,11 @@ import { formatInProfileTimezone } from "@/lib/timezone";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { one } from "@/lib/supabase/relations";
 import { getPublicAppOrigin } from "@/lib/site";
+import { RescheduleNotice } from "@/components/book/reschedule-notice";
+import { getGroomerContactEmail } from "@/lib/groomer-contact";
+import { formatRescheduleMessage } from "@/lib/reschedule-message";
+import { formatDepositCustomerNote } from "@/lib/deposit-copy";
+import { resolveAppointmentFromStripeSession } from "@/lib/booking/confirm-stripe-session";
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +22,13 @@ export default async function BookingSuccessPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ appointment_id?: string }>;
+  searchParams: Promise<{ appointment_id?: string; session_id?: string }>;
 }) {
   const { slug } = await params;
-  const { appointment_id } = await searchParams;
+  const { appointment_id: appointmentIdParam, session_id: sessionId } =
+    await searchParams;
 
-  if (!isSupabaseConfigured() || !appointment_id) {
+  if (!isSupabaseConfigured() || (!appointmentIdParam && !sessionId)) {
     notFound();
   }
 
@@ -35,10 +41,39 @@ export default async function BookingSuccessPage({
 
   if (!profile) notFound();
 
+  let appointmentId = appointmentIdParam ?? null;
+
+  if (!appointmentId && sessionId) {
+    appointmentId = await resolveAppointmentFromStripeSession(
+      supabase,
+      sessionId,
+      slug,
+    );
+  }
+
+  if (!appointmentId) {
+    return (
+      <div className="min-h-full bg-slate-50 px-4 py-10">
+        <div className="mx-auto max-w-lg space-y-6 text-center">
+          <h1 className="text-lg font-semibold text-slate-900">Processing payment…</h1>
+          <p className="text-sm text-slate-600">
+            Your payment was received. Refresh this page in a moment, or check your
+            email for confirmation.
+          </p>
+          <Button asChild variant="secondary">
+            <Link href={`/book/${slug}`}>Back to booking</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const { data: appt } = await supabase
     .from("appointments")
-    .select("id, starts_at, ends_at, status, pets(name), services(name)")
-    .eq("id", appointment_id)
+    .select(
+      "id, starts_at, ends_at, status, deposit_cents, deposit_status, pets(name), services(name)",
+    )
+    .eq("id", appointmentId)
     .eq("groomer_id", profile.id)
     .eq("source", "public_booking")
     .neq("status", "cancelled")
@@ -50,6 +85,16 @@ export default async function BookingSuccessPage({
   const service = one(appt.services as { name: string } | { name: string }[]);
   const when = formatInProfileTimezone(appt.starts_at, profile.timezone);
   const calendarUrl = `${getPublicAppOrigin()}/api/calendar/ics?appointment_id=${appt.id}`;
+  const groomerEmail = await getGroomerContactEmail(supabase, profile.id);
+  const rescheduleMessage = formatRescheduleMessage({
+    businessName: profile.business_name,
+    contactEmail: groomerEmail,
+  });
+
+  const depositNote = formatDepositCustomerNote(
+    appt.deposit_cents ?? 0,
+    appt.deposit_status ?? "none",
+  );
 
   return (
     <div className="min-h-full bg-slate-50 px-4 py-10">
@@ -77,6 +122,7 @@ export default async function BookingSuccessPage({
             <p>
               <span className="font-medium">When:</span> {when}
             </p>
+            {depositNote ? <p className="text-green-800">{depositNote}</p> : null}
           </CardContent>
         </Card>
 
@@ -88,6 +134,8 @@ export default async function BookingSuccessPage({
             <Link href={`/book/${slug}`}>Book another</Link>
           </Button>
         </div>
+
+        <RescheduleNotice message={rescheduleMessage} />
 
         <BookingFooter />
       </div>

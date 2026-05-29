@@ -5,6 +5,8 @@ import { sendTransactionalEmail } from "@/lib/email";
 import { formatInProfileTimezone } from "@/lib/timezone";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { one } from "@/lib/supabase/relations";
+import { getGroomerContactEmail } from "@/lib/groomer-contact";
+import { formatRescheduleMessage } from "@/lib/reschedule-message";
 
 /** Vercel Cron: send day-before reminders. Protect with CRON_SECRET. */
 export async function GET(request: Request) {
@@ -67,6 +69,12 @@ export async function GET(request: Request) {
       profile.timezone,
     );
 
+    const groomerEmail = await getGroomerContactEmail(supabase, appt.groomer_id);
+    const rescheduleMessage = formatRescheduleMessage({
+      businessName: profile.business_name,
+      contactEmail: groomerEmail,
+    });
+
     const emailResult = await sendTransactionalEmail({
       to: client.email,
       templateId: "day_before",
@@ -75,6 +83,7 @@ export async function GET(request: Request) {
         petName: pet?.name ?? "your pet",
         clientName: client.full_name,
         startsAtLocal,
+        rescheduleMessage,
       },
     });
 

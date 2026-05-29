@@ -1,5 +1,13 @@
 export type AppointmentStatus = "confirmed" | "completed" | "cancelled";
 export type AppointmentSource = "staff" | "public_booking";
+export type DepositStatus =
+  | "none"
+  | "pending"
+  | "authorized"
+  | "paid"
+  | "failed"
+  | "refunded";
+export type BookingPendingStatus = "pending" | "completed" | "expired" | "cancelled";
 export type SubscriptionPlan = "trial" | "starter" | "pro" | "free";
 export type ReminderKind = "confirmation" | "day_before";
 export type ReminderChannel = "email" | "sms";
@@ -16,6 +24,8 @@ export type Profile = {
   subscription_status: string;
   trial_ends_at: string | null;
   onboarding_dismissed_at: string | null;
+  deposit_enabled: boolean;
+  deposit_cents: number;
   created_at: string;
   updated_at: string;
 };
@@ -78,8 +88,25 @@ export type Appointment = {
   status: AppointmentStatus;
   source: AppointmentSource;
   notes: string | null;
+  deposit_cents: number;
+  deposit_status: DepositStatus;
+  stripe_checkout_session_id: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type BookingPending = {
+  id: string;
+  groomer_id: string;
+  service_id: string;
+  starts_at: string;
+  ends_at: string;
+  payload: PublicBookPayload & { slug: string };
+  stripe_checkout_session_id: string | null;
+  status: BookingPendingStatus;
+  expires_at: string;
+  appointment_id: string | null;
+  created_at: string;
 };
 
 export type ServiceRecord = {

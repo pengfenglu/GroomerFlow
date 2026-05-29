@@ -1,29 +1,41 @@
 import { SetupNotice } from "@/components/setup-notice";
+import { WeekCalendar } from "@/components/calendar/week-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { createStaffAppointmentAction } from "@/app/actions/appointments";
 import { getGroomerContext } from "@/lib/data/groomer-context";
 import { getProfileForGroomer } from "@/lib/data/profile";
-import { formatInProfileTimezone } from "@/lib/timezone";
+import { getWeekBounds } from "@/lib/calendar-week";
+import { localDateTimeToUtc } from "@/lib/timezone";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { one } from "@/lib/supabase/relations";
+import { addDays } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 export const dynamic = "force-dynamic";
 
-export default async function CalendarPage() {
+export default async function CalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ week?: string }>;
+}) {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
   const profile = await getProfileForGroomer();
   const { groomerId, supabase } = await getGroomerContext();
   if (!supabase || !profile) return <SetupNotice />;
 
-  const rangeStart = new Date();
-  const rangeEnd = new Date();
-  rangeEnd.setDate(rangeEnd.getDate() + 14);
+  const { week } = await searchParams;
+  const { weekStartKey } = getWeekBounds(week, profile.timezone);
+  const rangeStart = localDateTimeToUtc(weekStartKey, "00:00", profile.timezone);
+  const nextWeekKey = formatInTimeZone(
+    addDays(fromZonedTime(`${weekStartKey}T12:00:00`, profile.timezone), 7),
+    profile.timezone,
+    "yyyy-MM-dd",
+  );
+  const rangeEnd = localDateTimeToUtc(nextWeekKey, "00:00", profile.timezone);
 
   const [{ data: appointments }, { data: pets }, { data: services }] =
     await Promise.all([
@@ -34,7 +46,7 @@ export default async function CalendarPage() {
         )
         .eq("groomer_id", groomerId)
         .gte("starts_at", rangeStart.toISOString())
-        .lte("starts_at", rangeEnd.toISOString())
+        .lt("starts_at", rangeEnd.toISOString())
         .order("starts_at", { ascending: true }),
       supabase
         .from("pets")
@@ -49,12 +61,38 @@ export default async function CalendarPage() {
         .order("name"),
     ]);
 
+  const weekAppointments =
+    appointments?.map((appt) => {
+      const pet = one(appt.pets as { name: string } | { name: string }[]);
+      const client = one(
+        appt.clients as { full_name: string } | { full_name: string }[],
+      );
+      const service = one(
+        appt.services as { name: string } | { name: string }[],
+      );
+      return {
+        id: appt.id,
+        starts_at: appt.starts_at,
+        status: appt.status,
+        source: appt.source,
+        petName: pet?.name ?? "Pet",
+        clientName: client?.full_name ?? "Client",
+        serviceName: service?.name ?? "Service",
+      };
+    }) ?? [];
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Calendar</h1>
-        <p className="text-sm text-slate-600">Next 14 days · {profile.timezone}</p>
+        <p className="text-sm text-slate-600">Week view · {profile.timezone}</p>
       </div>
+
+      <WeekCalendar
+        timezone={profile.timezone}
+        weekParam={week}
+        appointments={weekAppointments}
+      />
 
       <Card>
         <CardTitle>Add appointment (staff)</CardTitle>
@@ -110,47 +148,6 @@ export default async function CalendarPage() {
           </form>
         </CardContent>
       </Card>
-
-      <ul className="space-y-2">
-        {!appointments?.length ? (
-          <p className="text-sm text-slate-600">No upcoming appointments.</p>
-        ) : (
-          appointments.map((appt) => {
-            const pet = one(appt.pets as { name: string } | { name: string }[]);
-            const client = one(
-              appt.clients as { full_name: string } | { full_name: string }[],
-            );
-            const service = one(
-              appt.services as { name: string } | { name: string }[],
-            );
-            return (
-              <li key={appt.id}>
-                <Card className="p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <Link
-                        href={`/appointments/${appt.id}`}
-                        className="font-medium text-green-800 hover:underline"
-                      >
-                        {formatInProfileTimezone(appt.starts_at, profile.timezone)}
-                      </Link>
-                      <p className="text-sm text-slate-600">
-                        {pet?.name} · {client?.full_name} · {service?.name}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge>{appt.status}</Badge>
-                      {appt.source === "public_booking" ? (
-                        <Badge variant="secondary">Online</Badge>
-                      ) : null}
-                    </div>
-                  </div>
-                </Card>
-              </li>
-            );
-          })
-        )}
-      </ul>
     </div>
   );
 }
